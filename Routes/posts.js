@@ -110,5 +110,36 @@ router.get("/timeline/:userId", async (req, res) => {
         res.status(500).json(err);
     }
 });
-
+/*
+router.get("/timeline/:userId", async (req, res) => {
+    try {
+      console.log("Reached timeline route");
+      const userId = req.params.userId;
+      console.log("User ID:", userId);
+  
+      // Fetch current user
+      const currentUser = await User.findById(userId);
+      console.log("Current User:", currentUser);
+  
+      // Fetch user posts
+      const userPosts = await Post.find({ userId: currentUser._id });
+      console.log("User Posts:", userPosts);
+  
+      // Fetch friend posts
+      const friendPosts = await Promise.all(
+        currentUser.following.map((friendId) => {
+          return Post.find({ userId: friendId });
+        })
+      );
+  
+      // Combine user and friend posts and send response
+      const timelinePosts = userPosts.concat(...friendPosts);
+      res.status(200).json(timelinePosts);
+    } catch (err) {
+      console.error("Error in timeline route:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+  
+  */
 module.exports = router;

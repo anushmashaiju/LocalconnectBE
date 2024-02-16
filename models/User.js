@@ -13,47 +13,48 @@ const UserSchema = new mongoose.Schema({
         max: 50,
         unique: true
     },
-    password: {
-        type: String,
-        require: true,
-        min: 6,
-    },
+   
     profilePicture: {
         type: String,
         default: ""
     },
-    coverPicture: {
-        type: String,
-        default: ""
+   
+    birthday:{
+        type:String,
+        required:true
     },
-    followers: {
-        type: Array,
-        default: []
+    gender:{
+        type:String,
+        
     },
-    following: {
-        type: Array,
-        default: []
+   
+  mobile :{
+        type:Number,   
+    },
+    password:{
+        type:String,
+        required:true
     },
     isAdmin: {
         type: Boolean,
         default: false,
     },
-    description:{
-        type:String,
-        max:50
+    description: {
+        type: String,
+        max: 50
     },
- city:{
-        type:String,
-        max:50
+    location: {
+        type: String,
+        max: 50
     },
-from:{
-        type:String,
-        max:50
-    },
-    relationship:{
-        type:Number,
-        num:[1,2,3],
-    },
+ followers:{
+    type:Array,
+    default:[]
+ },
+ following:{
+    type:Array,
+    default:[]
+ },
 },
     { timestamps: true }
 );
