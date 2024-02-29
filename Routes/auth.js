@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const User = require("../models/User")
 const bcrypt = require("bcrypt")
-
+const jwt= require ('jsonwebtoken')
 //SIGN UP
 
 router.post("/SignUp", async (req, res) => {
@@ -20,14 +20,6 @@ try{
         location:req.body.location, 
          password:hashedPassword,
  });
-
- //save user and respond
-/*const user =await newUser.save();
-res.status(200).json(user);
-}catch(err){
-    res.status(500).json(err);
-}
-});*/
 const user = await newUser.save();
 res.status(200).json(user);
 } catch (err) {
@@ -35,6 +27,32 @@ console.error("Error during user registration:", err);
 res.status(500).json({ error: "Internal Server Error" });
 }
 });
+
+//LOGIN
+
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const user = await User.findOne({ email: email });
+        if (user) {
+            const response = await bcrypt.compare(password, user.password);
+            if (response) {
+                const token = jwt.sign({email:user.email},"localconnectsecretkey",{expiresIn:"1d"})
+                res.cookie("token",token);
+                //res.json("success");
+                res.status(200).json({ success: true, message: 'Login successful', token ,_id:user._id,userName:user.userName});
+            } else {
+                res.json("incorrect password");
+            }
+        } else {
+            res.json("no record existed");
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
 //now going to use postman:request for the application
 
 /*   router.get("/register", async (req, res) => {
@@ -63,7 +81,7 @@ res.status(200).json(user);
         res.status(500).json(err);
     }
 })
-*/
+
 router.post("/login", async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
@@ -85,5 +103,5 @@ router.post("/login", async (req, res) => {
         res.status(500).json(err);
     }
 });
-
+*/
 module.exports = router;

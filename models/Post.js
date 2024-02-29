@@ -12,6 +12,14 @@ const PostSchema = new mongoose.Schema({
     type: String,
 
   },
+  location: {
+    type: String , // Add location field
+    required:true
+  },
+  postDate: {
+    type: Date,   // Add post date field
+    default: Date.now
+  },
   likes: {
     type: Array,
     default: [],

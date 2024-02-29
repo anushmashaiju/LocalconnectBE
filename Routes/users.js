@@ -1,5 +1,5 @@
 const User = require("../models/User");
-
+const bcrypt = require("bcrypt");
 const router = require("express").Router();
 
 //UPDATE USER
@@ -25,7 +25,24 @@ router.put("/:id", async (req, res) => {
         return res.status(403).json("you can update only your account!");
     }
 })
-
+/*
+router.put("/update-username", async (req, res) => {
+    const userId = req.body.userId; // Assuming you send userId in the request body
+    const newUsername = req.body.newUsername;
+  
+    try {
+      // Update the username in the database
+      const updatedUser = await User.findByIdAndUpdate(userId, {
+        $set: { userName: newUsername },
+      });
+  
+      res.status(200).json("Username has been updated");
+    } catch (error) {
+      console.error(error);
+      res.status(500).json(error);
+    }
+  });
+  */
 //DELETE USER
 
 router.delete("/:id", async (req, res) => {

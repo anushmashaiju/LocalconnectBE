@@ -34,19 +34,24 @@ router.put("/:id",async(req,res)=>{
     })
 
 //delete a post
-router.delete("/:id",async(req,res)=>{
-    try{
+router.delete("/:id", async (req, res) => {
+    try {
         const post = await Post.findById(req.params.id);
-        if (post.userId === req.body.userId){
-            await post.deleteOne();
-            res.status(200).json("the post has been deleted")
-        }else{
-            res.status(403).json("you can delete only your post")
+        if (!post) {
+            return res.status(404).json("Post not found");
         }
-        }catch (err){
-            res.status(500).json(err);
+
+        if (post.userId.toString() !== req.body.userId) {
+            return res.status(403).json("You can delete only your post");
         }
-    })
+
+        await post.deleteOne();
+        return res.status(200).json("The post has been deleted");
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json(err.message || "Internal Server Error");
+    }
+});
 
 //like a post and dislike post
 router.put("/:id/like",async (req,res)=>{
@@ -110,6 +115,8 @@ router.get("/timeline/:userId", async (req, res) => {
         res.status(500).json(err);
     }
 });
+
+
 /*
 router.get("/timeline/:userId", async (req, res) => {
     try {
@@ -141,5 +148,39 @@ router.get("/timeline/:userId", async (req, res) => {
     }
   });
   
+  *
+  router.get('/posts', async (req, res) => {
+    try {
+      // Assume you have a logged-in user
+      const currentUser = req.user; // Use your authentication logic to get the current user
+  
+      // Fetch friends of the current user
+      const user = await User.findById(currentUser._id).populate('friends', 'username');
+  
+      // Extract friend ids
+      const friendIds = user.friends.map(friend => friend._id);
+  
+      // Fetch posts from friends
+      const friendsPosts = await Post.find({ userId: { $in: friendIds } }).populate('userId', 'username');
+  
+      res.json(friendsPosts);
+    } catch (error) {
+      console.error('Error fetching friends posts:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
   */
+  router.get('/posts', async (req, res) => {
+    try {
+      const posts = await Post.find(); // Assuming you are using Mongoose for MongoDB
+  
+      // Extract locations from the posts
+      const locations = posts.map(post => post.location);
+  
+      res.json({ locations });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 module.exports = router;
