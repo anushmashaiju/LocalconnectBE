@@ -2,8 +2,6 @@ const express = require("express");
 const app = express();
 const mongoose= require ("mongoose");
 const dotenv= require("dotenv");
-const helmet = require ("helmet");
-const morgan = require ("morgan");
 const jwt = require ('jsonwebtoken')
 const cookieParser = require ('cookie-parser')
 const cors = require('cors');
@@ -53,9 +51,6 @@ app.use("/postImages",express.static(path.join(__dirname,"public/postImages")));
 
 //MIDDLEWARE
 app.use (express.json());
-app.use(helmet());
-app.use(morgan("common"));
-
 const storage =multer.diskStorage({
     destination:(req,file,cb)=>{
         cb(null,"public/postImages/")
@@ -101,3 +96,12 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something went wrong!');
   });
   
+  //here i given set interval to delete the events which are outdated to do that i had given a router and this set interval nothing i changed in my rightbar.jsx
+  setInterval(async () => {
+    try {
+      const result = await Event.deleteMany({ date: { $lt: new Date() } });
+      console.log(`Deleted ${result.deletedCount} outdated events.`);
+    } catch (error) {
+      console.error('Error deleting outdated events:', error);
+    }
+  }, 24 * 60 * 60 * 1000); // Run every 24 hours

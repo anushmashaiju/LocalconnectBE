@@ -1,11 +1,39 @@
 const router = require("express").Router();
 const Post = require("../models/Post")
 const User =require ("../models/User")
+
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+router.post("/", upload.single("image"), async (req, res) => {
+    try {
+      const { description, location, userId } = req.body;
+      
+      // Check if an image is provided
+      const image = req.file ? req.file.buffer.toString('base64') : undefined;
+  
+      const newPost = new Post({
+        description,
+        location: location || "Default Location",
+        userId,
+        image,
+      });
+  
+      const savedPost = await newPost.save();
+      res.status(200).json(savedPost);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json(err.message || "Internal Server Error");
+    }
+  });
+  
+
 /*
 router.get("/",(req,res)=>{
     console.log("post page")
 })
-*/
+
 
 //create a post
 router.post("/",async(req,res)=>{
@@ -19,7 +47,7 @@ try{
 })
 
 //update a post
-router.put("/:id",async(req,res)=>{
+/*router.put("/:id",async(req,res)=>{
     try{
         const post = await Post.findById(req.params.id);
         if (post.userId === req.body.userId){
@@ -32,7 +60,38 @@ router.put("/:id",async(req,res)=>{
             res.status(500).json(err);
         }
     })
-
+*/
+// Assuming your Post model has a 'location' field
+router.put("/:id", upload.single("image"), async (req, res) => {
+    try {
+      const post = await Post.findById(req.params.id);
+      console.log(req.files,req.file,"checking file")
+      if (!post) {
+        return res.status(404).json("Post not found");
+      }
+  
+      if (post.userId !== req.body.userId) {
+        return res.status(403).json("You can update only your post");
+      }
+  
+      // Update the post fields
+      post.description = req.body.description;
+      post.location = req.body.location; // Assuming 'location' is a field in your Post model
+  
+      // Check if a new image is provided
+      if (req.file) {
+        // Update the image only if a new one is provided
+        post.image = req.file.buffer.toString('base64'); // Convert the image to base64 string
+      }
+  
+      const updatedPost = await post.save();
+      res.status(200).json(updatedPost);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+  
 //delete a post
 router.delete("/:id", async (req, res) => {
     try {
@@ -97,7 +156,7 @@ try{
 }
 });
 
-*/
+
 router.get("/timeline/:userId", async (req, res) => {
     try {
         
@@ -115,9 +174,29 @@ router.get("/timeline/:userId", async (req, res) => {
         res.status(500).json(err);
     }
 });
+*/
+//get posts of all users
+router.get("/", (req, res) => {
+    Post.find().then((response) => {
+        res.status(200).json(response)
+    })
+        .catch((err) => {
+            res.status(500).json(err)
+        })
+})
 
 
 /*
+router.get('timeline/all', async (req, res) => {
+    try {
+      const allPosts = await Post.find().sort({ createdAt: -1 }); // Sort by createdAt in descending order
+      res.json(allPosts);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
 router.get("/timeline/:userId", async (req, res) => {
     try {
       console.log("Reached timeline route");
@@ -169,18 +248,53 @@ router.get("/timeline/:userId", async (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
-  */
-  router.get('/posts', async (req, res) => {
+ 
+  router.get('/', async (req, res) => {
     try {
-      const posts = await Post.find(); // Assuming you are using Mongoose for MongoDB
+      const posts = await Post.find({location}); // Assuming you are using Mongoose for MongoDB
   
       // Extract locations from the posts
-      const locations = posts.map(post => post.location);
-  
-      res.json({ locations });
+     
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+
+  router.get("/:location",async (req, res) => {
+    try {
+        const result = await Post.find({ location })
+        res.status(200).json(result)
+    } catch (error) {
+    }
+})
+ */
+
+router.get("/location/:location", async (req, res) => {
+    try {
+        const location = req.params.location;
+        const posts = await Post.find({ location: location });
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error('Error fetching posts:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+
+//get user's post
+router.get("/timeline/:userId", async (req, res) => {
+    try {        
+        const currentUser = await User.findById(req.params.userId);
+        if (!currentUser) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const userPosts = await Post.find({ userId: currentUser._id }); 
+        res.status(200).json(userPosts);  // Send the user's posts in the response
+    } catch (err) {        
+        console.error(err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
 module.exports = router;

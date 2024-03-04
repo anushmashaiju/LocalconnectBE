@@ -7,9 +7,14 @@ const EventSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+
   description: {
     type: String,
-    max: 500
+    maxlength: 500
+  },
+  location: { // New field for location
+    type: String,
+    required: true,
   },
 })
   module.exports = mongoose.model("Event", EventSchema)

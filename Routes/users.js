@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const router = require("express").Router();
 
 //UPDATE USER
+
 router.put("/:id", async (req, res) => {
     if (req.body.userId === req.params.id || req.body.isAdmin) {
         if (req.body.password) {
@@ -25,6 +26,7 @@ router.put("/:id", async (req, res) => {
         return res.status(403).json("you can update only your account!");
     }
 })
+
 /*
 router.put("/update-username", async (req, res) => {
     const userId = req.body.userId; // Assuming you send userId in the request body
